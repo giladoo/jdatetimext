@@ -2,9 +2,9 @@ import jdatetime
 from datetime import datetime, timedelta
 
 def jdate_trunc(group_name='day', date_value=datetime.now() ):
-
     quarter_list = [1, 4, 7, 10]
     if type(date_value) == str:
+
         date_value_d = datetime.strptime(date_value, '%Y-%m-%d %H:%M:%S')
     else:
         date_value_d = date_value

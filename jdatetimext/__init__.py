@@ -1,1 +1,1 @@
-from .jdatetrunc import jdate_trunc
+from .jdate_trunc import jdate_trunc
