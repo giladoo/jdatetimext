@@ -23,7 +23,11 @@ def jdate_trunc(group_name='day', date_value=datetime.now() ):
     elif group_name == 'month':
         jdate_value_d = jdatetime.datetime(j_year, j_month, 1, 0, 0, 0)
     elif group_name == 'week':
-        jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, 0, 0, 0) - timedelta(days=jdate_value.weekday())
+        if jdate_value.weeknumber() != 1:
+            jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, 0, 0, 0) - timedelta(days=jdate_value.weekday())
+        else:
+            jdate_value_d = jdatetime.datetime(j_year, 1, 1, 0, 0)
+
     elif group_name == 'day':
         jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, 0, 0, 0)
     elif group_name == 'hour':
