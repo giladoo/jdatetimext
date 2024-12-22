@@ -1,10 +1,25 @@
 import jdatetime
 from datetime import datetime, timedelta
 
-def j_start(date_type='day', date_value=datetime.now() ):
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATE_FORMAT = '%Y-%m-%d'
+
+
+def j_start_j(date_type='day', date_value=datetime.now() ):
+    '''
+    It takes a datetime and date_type (day, week,...). Then it find the START date of the date_type.
+    The calculation and output will be on JALAALI calendar.
+    Example:
+        date_type: 'year'
+        date_value: 2024-11-25 10:08:50
+        return: jdatetime.datetime(1403, 1, 1, 0, 0)
+    :param date_type: string
+    :param date_value: datetime
+    :return: jdatetime
+    '''
     quarter_list = [1, 4, 7, 10]
     if type(date_value) == str:
-        date_value_d = datetime.strptime(date_value, '%Y-%m-%d %H:%M:%S')
+        date_value_d = datetime.strptime(date_value, DATETIME_FORMAT)
     else:
         date_value_d = date_value
     jdate_value = jdatetime.datetime.fromgregorian(datetime=date_value_d)
@@ -38,23 +53,36 @@ def j_start(date_type='day', date_value=datetime.now() ):
     elif date_type == '_':
         jdate_value_d = jdate_value
 
-    return jdate_value_d.togregorian()
+    return jdate_value_d
 
-
-def j_end(date_type='day', date_value=datetime.now() ):
+def j_start(date_type='day', date_value=datetime.now()):
     '''
-    It gets a datetime group type and datetime, then calculate the last datetime of that period.
-
-    example:
-        group_by -> 'year'
-        value    -> '2024-03-20 00:00:00' (1403/01/01 00:00:00)
-        return   -> '2025-03-21 00:00:00' (1404/01/01 00:00:00)
-
-    :param self:
-    :param group_by:
-    :param value:
-    :return:
+    It takes a datetime and date_type (day, week,...). Then it find the START date of the date_type.
+    The calculation is based on Jalaali calendar but the output will be GREGORIAN calendar
+    Example:
+        date_type: 'year'
+        date_value: 2024-11-25 10:08:50
+        return: datetime.datetime(2024, 3, 20, 0, 0)
+    :param date_type: string
+    :param date_value: datetime
+    :return: datetime
     '''
+    return j_start_j(date_type, date_value).togregorian()
+
+
+def j_end_j(date_type='day', date_value=datetime.now() ):
+    '''
+    It takes a datetime and date_type (day, week,...). Then it find the END date of the date_type.
+    The calculation and output will be on JALAALI calendar.
+    Example:
+        date_type: 'year'
+        date_value: 2024-11-25 10:08:50
+        return: jdatetime.datetime(1404, 1, 1, 0, 0)
+    :param date_type: string
+    :param date_value: datetime
+    :return: jdatetime
+    '''
+
     quarter_list = [1, 4, 7, 10]
     jdate_value = jdatetime.datetime.fromgregorian(date=date_value)
     jdate_value_d = jdate_value
@@ -108,4 +136,80 @@ def j_end(date_type='day', date_value=datetime.now() ):
         case '_':
             jdate_value_d = jdate_value
 
-    return jdate_value_d.togregorian()
+    return jdate_value_d
+
+
+def j_end(date_type='day', date_value=datetime.now() ):
+    '''
+    It takes a datetime and date_type (day, week,...). Then it find the END date of the date_type.
+    The calculation is based on Jalaali calendar but the output will be GREGORIAN calendar
+    Example:
+        date_type: 'year'
+        date_value: 2024-11-25 10:08:50
+        return: datetime.datetime(2025, 3, 21, 0, 0)
+    :param date_type: string
+    :param date_value: datetime
+    :return: datetime
+    '''
+    return j_end_j(date_type, date_value).togregorian()
+
+
+def j_start_end(date_type='day', date_value=datetime.now()):
+    '''
+    It takes a datetime and date_type (day, week,...). Then it find the START and END date of the date_type.
+    The calculation is based on Jalaali calendar but the output will be GREGORIAN calendar
+    Example:
+        date_type: 'year'
+        date_value: 2024-11-25 10:08:50
+        return: (datetime.datetime(2024, 3, 20, 0, 0), datetime.datetime(2025, 3, 21, 0, 0))
+    :param date_type: string
+    :param date_value: datetime
+    :return: (datetime, datetime)
+    '''
+    start_date = j_start(date_type, date_value)
+    end_date = j_end(date_type, date_value)
+    return (start_date, end_date)
+
+def j_start_end_j(date_type='day', date_value=datetime.now()):
+    '''
+    It takes a datetime and date_type (day, week,...). Then it find the START and END date of the date_type.
+    The calculation is based on Jalaali calendar but the output will be JDATETIME of JALAALI calendar
+    Example:
+        date_type: 'year'
+        date_value: 2024-11-25 10:08:50
+        return: (jdatetime.datetime(1403, 1, 1, 0, 0), jdatetime.datetime(1403, 12, 30, 23, 59, 59)) <1>
+
+    <1>: Jalaali output is the last second ot end date. 1403-12-30 23:59:59
+
+    :param date_type: string
+    :param date_value: datetime
+    :return: (datetime, datetime)
+    '''
+    start_date = j_start_j(date_type, date_value)
+    end_date = j_end_j(date_type, date_value) - timedelta(seconds=1)
+    return (start_date, end_date)
+
+def j_start_end_js(date_type='day', date_value=datetime.now(), dt='datetime'):
+    '''
+    It takes a datetime and date_type (day, week,...). Then it find the START and END date of the date_type.
+    The calculation is based on Jalaali calendar but the output will be STRING of JALAALI calendar
+    Example:
+        date_type: 'year'
+        date_value: 2024-11-25 10:08:50
+        return: dt='date' -> ('1403-01-01', '1403-12-30') <1>
+                dt=''     -> ('1403-01-01 00:00:00', '1403-12-30 23:59:59') <1>
+
+        <1>: Jalaali output is the last second ot end date. 1403-12-30 23:59:59
+    :param date_type: string
+    :param date_value: datetime
+    :param dt: string
+    :return: (string, string)
+    '''
+    if dt == 'date':
+        start_date = j_start_j(date_type, date_value).strftime(DATE_FORMAT)
+        end_date = (j_end_j(date_type, date_value) - timedelta(seconds=1)).strftime(DATE_FORMAT)
+    else:
+        start_date = j_start_j(date_type, date_value).strftime(DATETIME_FORMAT)
+        end_date = (j_end_j(date_type, date_value) - timedelta(seconds=1)).strftime(DATETIME_FORMAT)
+
+    return (start_date, end_date)
