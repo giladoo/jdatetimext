@@ -11,3 +11,5 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 Requires-Dist: jdatetime>=5.0
+
+ pip install git+https://github.com/giladoo/jdatetimext.git --break-system-packages
