@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.2
 Name: jdatetimext
-Version: 1.0.5
+Version: 1.0.8
 Summary: Get first date of a calendar period
 Home-page: https://github.com/giladoo/jdatetimext
 Author: Arash Homayounfar
@@ -11,5 +11,10 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 Requires-Dist: jdatetime>=5.0
+Requires-Dist: dateutil
+Dynamic: requires-dist
 
  pip install git+https://github.com/giladoo/jdatetimext.git --break-system-packages
+
+1.0.8
+datetime_pattern() added to prevent false on date pattern mismatch.

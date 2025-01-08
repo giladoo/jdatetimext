@@ -1,5 +1,6 @@
 import jdatetime
 from datetime import datetime, timedelta
+from dateutil.parser import parse
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 DATE_FORMAT = '%Y-%m-%d'
@@ -18,10 +19,16 @@ def j_start_j(date_type='day', date_value=datetime.now() ):
     :return: jdatetime
     '''
     quarter_list = [1, 4, 7, 10]
+    # print(f"+++++ \n date_type: {date_type}, date_value: {date_value}")
     if type(date_value) == str:
-        date_value_d = datetime.strptime(date_value, DATETIME_FORMAT)
+        date_value = datetime_pattern(date_value)
+        date_value_d = datetime.strptime(date_value, DATETIME_FORMAT) if date_value else False
     else:
         date_value_d = date_value
+
+    if not date_value_d:
+        return False
+
     jdate_value = jdatetime.datetime.fromgregorian(datetime=date_value_d)
     jdate_value_d = jdate_value
     j_year = jdate_value.year
@@ -67,8 +74,8 @@ def j_start(date_type='day', date_value=datetime.now()):
     :param date_value: datetime
     :return: datetime
     '''
-    return j_start_j(date_type, date_value).togregorian()
-
+    j_start_j_value = j_start_j(date_type, date_value)
+    return j_start_j_value.togregorian() if j_start_j_value else False
 
 def j_end_j(date_type='day', date_value=datetime.now() ):
     '''
@@ -84,7 +91,16 @@ def j_end_j(date_type='day', date_value=datetime.now() ):
     '''
 
     quarter_list = [1, 4, 7, 10]
-    jdate_value = jdatetime.datetime.fromgregorian(date=date_value)
+    if type(date_value) == str:
+        date_value = datetime_pattern(date_value)
+        date_value_d = datetime.strptime(date_value, DATETIME_FORMAT) if date_value else False
+    else:
+        date_value_d = date_value
+
+    if not date_value_d:
+        return False
+
+    jdate_value = jdatetime.datetime.fromgregorian(date=date_value_d)
     jdate_value_d = jdate_value
     j_year = jdate_value.year
     j_month = jdate_value.month
@@ -92,52 +108,50 @@ def j_end_j(date_type='day', date_value=datetime.now() ):
     j_hour = jdate_value.hour
     j_minute = jdate_value.minute
     j_second = jdate_value.second
-    match date_type:
-        case 'year':
-            jdate_value_d = jdatetime.datetime(j_year + 1, 1, 1, 0, 0)
-        case 'quarter':
-            j_month = quarter_list[(j_month - 1) // 3]
-            if j_month < 9:
-                j_month += 3
-            else:
-                j_month = 1
-                j_year += 1
-            jdate_value_d = jdatetime.datetime(j_year, j_month, 1, 0, 0, 0)
-        case 'month':
-            first_day = jdatetime.datetime(j_year, j_month, 1, 0, 0, 0)
-            next_month = first_day.replace(day=28) + timedelta(days=5)
-            jdate_value_d = next_month.replace(day=1)
-        case 'week':
-            if jdate_value_d.weeknumber() < 52:
-                # TODO: The last week of a year can be share between two years. last day of the week is the last day of
-                #   that year.
-                #   if last day of this week has the same year record, its ok
-                #   if not, find the last day of the year, then set the last day of the year as end of the week
+    if date_type == 'year':
+        jdate_value_d = jdatetime.datetime(j_year + 1, 1, 1, 0, 0)
+    elif date_type == 'quarter':
+        j_month = quarter_list[(j_month - 1) // 3]
+        if j_month < 9:
+            j_month += 3
+        else:
+            j_month = 1
+            j_year += 1
+        jdate_value_d = jdatetime.datetime(j_year, j_month, 1, 0, 0, 0)
+    elif date_type == 'month':
+        first_day = jdatetime.datetime(j_year, j_month, 1, 0, 0, 0)
+        next_month = first_day.replace(day=28) + timedelta(days=5)
+        jdate_value_d = next_month.replace(day=1)
+    elif date_type == 'week':
+        if jdate_value_d.weeknumber() < 52:
+            # TODO: The last week of a year can be share between two years. last day of the week is the last day of
+            #   that year.
+            #   if last day of this week has the same year record, its ok
+            #   if not, find the last day of the year, then set the last day of the year as end of the week
+            jdate_value_d = jdate_value_d + timedelta(days=7 - jdate_value_d.weekday())
+        else:
+            # TODO:
+            #   find the last day of current week by finding the next week first day minus one.
+            next_week_start = jdate_value_d + timedelta(days=7 - jdate_value_d.weekday())
+            if next_week_start.year == j_year:
                 jdate_value_d = jdate_value_d + timedelta(days=7 - jdate_value_d.weekday())
             else:
-                # TODO:
-                #   find the last day of current week by finding the next week first day minus one.
-                next_week_start = jdate_value_d + timedelta(days=7 - jdate_value_d.weekday())
-                if next_week_start.year == j_year:
-                    jdate_value_d = jdate_value_d + timedelta(days=7 - jdate_value_d.weekday())
-                else:
-                    jdate_value_d = jdatetime.datetime(j_year + 1, 1, 1, 0, 0)
+                jdate_value_d = jdatetime.datetime(j_year + 1, 1, 1, 0, 0)
 
-        case 'day':
-            jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, 0, 0, 0) + timedelta(days=1)
-        case 'hour':
-            jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, j_hour, 0, 0) + timedelta(hours=1)
-        case 'minute':
-            jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, j_hour, j_minute, 0) + timedelta(
-                minutes=1)
-        case 'second':
-            jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, j_hour, j_minute, j_second) + timedelta(
-                seconds=1)
-        case '_':
-            jdate_value_d = jdate_value
+    elif date_type == 'day':
+        jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, 0, 0, 0) + timedelta(days=1)
+    elif date_type == 'hour':
+        jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, j_hour, 0, 0) + timedelta(hours=1)
+    elif date_type == 'minute':
+        jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, j_hour, j_minute, 0) + timedelta(
+            minutes=1)
+    elif date_type == 'second':
+        jdate_value_d = jdatetime.datetime(j_year, j_month, j_day, j_hour, j_minute, j_second) + timedelta(
+            seconds=1)
+    else:
+        jdate_value_d = jdate_value
 
     return jdate_value_d
-
 
 def j_end(date_type='day', date_value=datetime.now() ):
     '''
@@ -151,8 +165,8 @@ def j_end(date_type='day', date_value=datetime.now() ):
     :param date_value: datetime
     :return: datetime
     '''
-    return j_end_j(date_type, date_value).togregorian()
-
+    j_end_j_value = j_end_j(date_type, date_value)
+    return j_end_j_value.togregorian() if j_end_j_value else False
 
 def j_start_end(date_type='day', date_value=datetime.now()):
     '''
@@ -186,10 +200,11 @@ def j_start_end_j(date_type='day', date_value=datetime.now()):
     :return: (datetime, datetime)
     '''
     start_date = j_start_j(date_type, date_value)
-    end_date = j_end_j(date_type, date_value) - timedelta(seconds=1)
+    end_date = j_end_j(date_type, date_value)
+    end_date = j_end_j(date_type, date_value) - timedelta(seconds=1) if end_date else False
     return (start_date, end_date)
 
-def j_start_end_js(date_type='day', date_value=datetime.now(), dt='datetime'):
+def j_start_end_js(date_type='day', date_value=datetime.now(), dt='datetime', format=DATETIME_FORMAT):
     '''
     It takes a datetime and date_type (day, week,...). Then it find the START and END date of the date_type.
     The calculation is based on Jalaali calendar but the output will be STRING of JALAALI calendar
@@ -205,11 +220,21 @@ def j_start_end_js(date_type='day', date_value=datetime.now(), dt='datetime'):
     :param dt: string
     :return: (string, string)
     '''
-    if dt == 'date':
-        start_date = j_start_j(date_type, date_value).strftime(DATE_FORMAT)
-        end_date = (j_end_j(date_type, date_value) - timedelta(seconds=1)).strftime(DATE_FORMAT)
-    else:
-        start_date = j_start_j(date_type, date_value).strftime(DATETIME_FORMAT)
-        end_date = (j_end_j(date_type, date_value) - timedelta(seconds=1)).strftime(DATETIME_FORMAT)
+    start_date = j_start_j(date_type, date_value)
+    start_date = start_date.strftime(format) if start_date else False
+    end_date = j_end_j(date_type, date_value)
+    end_date = (end_date - timedelta(seconds=1)).strftime(format) if end_date else False
 
     return (start_date, end_date)
+
+def jdatejs(date_value=datetime.now(), format=DATE_FORMAT):
+    return j_start_end_js(date_type='day', date_value=date_value, dt='date', format=format)[0]
+
+
+def datetime_pattern(date_str):
+    try:
+        dt = parse(date_str, fuzzy=False)
+        if dt:
+            return dt.strftime('%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        return False
