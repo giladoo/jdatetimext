@@ -5,6 +5,7 @@ import logging
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 DATE_FORMAT = '%Y-%m-%d'
+_jmonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند']
 
 
 def j_start_j(date_type='day', date_value=datetime.now() ):
@@ -270,7 +271,38 @@ def j_date_period(date_type='month', duration=6, this_day=date.today(), lang='en
         next_start = j_start(date_type, start_date + timedelta(days=offset_days + duration_days * du))
         if lang == 'fa_IR':
             next_start = jdatejs(next_start)
-            data.append(f"{next_start[:7]}")
+            if date_type in ['day', 'week']:
+                data.append(f"{next_start}")
+            elif date_type in ['month',]:
+                month_no = int(next_start[5:7])
+                data.append(f"{next_start[:4]} {_jmonths[month_no - 1]}")
+            elif date_type in ['quarter']:
+                month_no =  next_start[5:7]
+                if month_no == '01':
+                    data.append(f"{next_start[:4]} بهار")
+                if month_no == '03':
+                    data.append(f"{next_start[:4]} تابستان")
+                if month_no == '07':
+                    data.append(f"{next_start[:4]} پاییز")
+                if month_no == '10':
+                    data.append(f"{next_start[:4]} زمستان")
+
+            elif date_type == 'year':
+                data.append(f"{next_start[:4]}")
         else:
-            data.append(f"{next_start.year}-{next_start.month}")
+            if date_type in ['day', 'week']:
+                data.append(f"{next_start.year}-{next_start.month}-{next_start.day}")
+            elif date_type in ['month', ]:
+                data.append(f"{next_start.year}-{next_start.month}")
+            elif date_type in ['quarter']:
+                if next_start.month == 1:
+                    data.append(f"{next_start.year} Q1")
+                elif next_start.month == 4:
+                    data.append(f"{next_start.year} Q2")
+                elif next_start.month == 7:
+                    data.append(f"{next_start.year} Q3")
+                elif next_start.month == 10:
+                    data.append(f"{next_start.year} Q4")
+            elif date_type == 'year':
+                data.append(f"{next_start.year}")
     return data
