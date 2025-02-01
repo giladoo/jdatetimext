@@ -248,8 +248,16 @@ def j_age(birth_date, end_date=date.today()):
         logging.warning('[j_age] birth date and end date must be an instance of date')
         return 0
 
-def j_date_period(date_type='month', duration=6, this_day=date.today(), lang='en_US'):
-    start_date = j_start(date_type, this_day)
+def j_date_period(date_type='month', duration=6, this_day=date.today(), lang='en_US', res='str'):
+    """
+
+    :param date_type: day, week, month, quarter, year
+    :param duration:
+    :param this_day: instance of date or datetime
+    :param lang: en_US -> Gregorian , fa_IR -> Jalaali
+    :param res: date -> datetime , str -> string
+    :return:
+    """
     data = []
     offset_days = 15
     if date_type == 'day':
@@ -266,10 +274,19 @@ def j_date_period(date_type='month', duration=6, this_day=date.today(), lang='en
     else:
         duration_days = 365
 
+    if duration >= 0:
+        start_date = j_start(date_type, this_day)
+    else:
+        # TODO: it might not be correct for months and leap years
+        start_date = j_start(date_type, this_day + timedelta(days=duration * duration_days))
+        duration = abs(duration) + 1
 
     for du in range(duration):
         next_start = j_start(date_type, start_date + timedelta(days=offset_days + duration_days * du))
-        if lang == 'fa_IR':
+
+        if res == 'date':
+            data.append(next_start)
+        elif lang == 'fa_IR':
             next_start = jdatejs(next_start)
             if date_type in ['day', 'week']:
                 data.append(f"{next_start}")
