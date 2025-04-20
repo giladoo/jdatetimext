@@ -232,6 +232,13 @@ def j_start_end_js(date_type='day', date_value=datetime.now(), dt='datetime', fo
 def jdatejs(date_value=datetime.now(), format=DATE_FORMAT):
     return j_start_end_js(date_type='day', date_value=date_value, dt='date', format=format)[0]
 
+def jdatetimej(date_value=datetime.now()):
+    return jdatetime.datetime.fromgregorian(datetime=date_value)
+
+def jdatetimejs(date_value=datetime.now(), format=DATE_FORMAT):
+    return jdatetime.datetime.fromgregorian(datetime=date_value).strftime(format)
+
+
 def datetime_pattern(date_str):
     try:
         dt = parse(date_str, fuzzy=False)
